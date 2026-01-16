@@ -266,4 +266,6 @@ tmux select-pane -t 0
 
 ---
 
-詳細なコマンドリファレンスは `reference.md` を参照。
+詳細なドキュメント:
+- コマンドリファレンス: [../../docs/command-reference.md](../../docs/command-reference.md)
+- 使用例: [../../docs/examples.md](../../docs/examples.md)

@@ -234,4 +234,6 @@ tmux switch-client -t agent
 
 ---
 
-詳細なコマンドリファレンスは `../tmux-multi-agent/reference.md` を参照。
+詳細なドキュメント:
+- コマンドリファレンス: [../../docs/command-reference.md](../../docs/command-reference.md)
+- 使用例: [../../docs/examples.md](../../docs/examples.md)

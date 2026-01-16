@@ -1,148 +1,221 @@
 # Multi-Agent tmux
 
-tmux上で複数のAIエージェント（Claude Code、Gemini CLI、Codex）を効率的に操作するためのスキル集。
+tmux上で複数のAIエージェント（Claude Code、Gemini CLI、Codex）を効率的に操作し、協調作業を行うためのClaude Codeプラグイン。
 
-## 概要
+## 特徴
 
-このプロジェクトは、tmuxを使って複数のAIエージェントを並列または単独で操作し、質問に答えてもらうためのノウハウとスキルをまとめたものです。
+- **マルチエージェント対応**: 複数のAIを並列で動かし、回答を比較
+- **自動状態検知**: 処理中/完了/エラーを自動判定
+- **コンテキスト節約**: サブエージェント（Haikuモデル）で効率的に処理
+- **セキュアな設計**: コマンドインジェクションを防ぐ安全な実装
+
+## インストール
+
+### マーケットプレイスから
+
+```bash
+# マーケットプレイスを追加
+claude /plugin marketplace add tejastice/cc-marketplace
+
+# プラグインをインストール
+claude /plugin install multi-agent-tmux@cc-marketplace
+```
+
+### ローカル開発
+
+```bash
+# リポジトリをクローン
+git clone https://github.com/tejastice/cc-marketplace
+
+# プラグインディレクトリを指定して起動
+claude --plugin-dir ./cc-marketplace/plugins/multi-agent-tmux
+```
+
+## 基本的な使い方
+
+### シングルエージェント（1対1の対話）
+
+```bash
+# 1. レイアウト構築
+/multi-agent-tmux:layout-single
+
+# 2. ペイン1にClaude Codeを起動（ガイドに従う）
+
+# 3. 質問を送信
+/multi-agent-tmux:ask 1 @README.md このファイルの内容を要約してください
+
+# 4. 状態を確認
+/multi-agent-tmux:check 1  # → "Ready" または "Processing"
+
+# 5. Ready になったら回答を取得
+「ペイン1の回答を取得して」
+```
+
+### マルチエージェント（並列比較）
+
+```bash
+# 1. レイアウト構築
+/multi-agent-tmux:layout-multi
+
+# 2. 各ペインにCLI起動（ガイドに従う）
+# ペイン1: Claude Code
+# ペイン2: Gemini CLI
+# ペイン3: Codex
+
+# 3. 各ペインに同じ質問を送信
+/multi-agent-tmux:ask 1 Pythonの非同期処理について教えてください
+/multi-agent-tmux:ask 2 Pythonの非同期処理について教えてください
+/multi-agent-tmux:ask 3 Pythonの非同期処理について教えてください
+
+# 4. 全ペインの状態を確認
+/multi-agent-tmux:status
+
+# 5. 各ペインが Ready になったら回答を取得
+「ペイン1の回答を取得して」
+「ペイン2の回答を取得して」
+「ペイン3の回答を取得して」
+```
 
 ## コマンド一覧
 
 ### レイアウト構築
-- `/multi-agent-tmux:layout-single` - シングルエージェント用レイアウト（左右2分割）
-- `/multi-agent-tmux:layout-multi` - マルチエージェント用レイアウト（左メイン + 右3分割）
+| コマンド | 説明 |
+|---------|------|
+| `/multi-agent-tmux:layout-single` | シングルエージェント用レイアウト（左右2分割） |
+| `/multi-agent-tmux:layout-multi` | マルチエージェント用レイアウト（左メイン + 右3分割） |
 
 ### エージェント操作
-- `/multi-agent-tmux:spawn <cli> [name]` - 新しいペインでAIエージェントを起動
-- `/multi-agent-tmux:ask <pane> <message>` - 指定ペインに質問を送信
-- `/multi-agent-tmux:check <pane>` - ペインの状態を簡潔に確認（Ready/Processing/Awaiting Permission/Error）
-- `/multi-agent-tmux:capture <pane>` - 完了確認または回答取得
+| コマンド | 説明 |
+|---------|------|
+| `/multi-agent-tmux:spawn <cli> [name]` | 新しいペインでAIエージェントを起動 |
+| `/multi-agent-tmux:ask <pane> <message>` | 指定ペインに質問を送信 |
+| `/multi-agent-tmux:check <pane>` | ペインの状態を簡潔に確認 |
+| `/multi-agent-tmux:capture <pane>` | 完了確認または回答取得 |
 
 ### 全体管理
-- `/multi-agent-tmux:status` - 全ペインの状態を一覧表示
+| コマンド | 説明 |
+|---------|------|
+| `/multi-agent-tmux:status` | 全ペインの状態を一覧表示 |
 
-## エージェント一覧
+## サブエージェント
 
-### pane-status-checker
-ペインの状態を判定する専門エージェント（Haikuモデル）。
+### pane-status-checker（Haikuモデル）
 
-**用途:**
-- 処理完了の検知
-- 許可待ちの検知
-- エラー検知
-- 並列処理の監視
+ペインの状態を自動判定する専門エージェント。
 
-### response-extractor
-ペインからAI回答を抽出する専門エージェント（Haikuモデル）。
+**判定できる状態:**
+- `Ready` - 入力待ち（処理完了）
+- `Processing` - 処理中
+- `Awaiting Permission` - ユーザー操作待ち
+- `Error` - エラー発生
 
-**用途:**
-- クリーンな回答の取得
-- コンテキストの節約
-- 複数エージェントの回答比較
+**判定方法:**
+処理中表示（`(ctrl+c to interrupt)`, `• Working`, `(esc to cancel)`など）の有無で判定。
+プロンプト文字（❯, ›, >）は処理中でも表示されるため使用しない。
 
-## スキル一覧
+### response-extractor（Haikuモデル）
+
+ペインからAI回答を抽出する専門エージェント。
+
+**機能:**
+- ノイズ除去（プロンプト、ステータスバー、ツール実行ログなど）
+- クリーンな回答テキストのみを返す
+- コンテキスト節約
+
+## 各AIエージェントの特徴
+
+| エージェント | 起動コマンド | 処理中の表示 | 得意分野 |
+|-------------|------------|------------|---------|
+| **Claude Code** | `claude` | `(ctrl+c to interrupt)`, `✻ <text>…` | コード生成・編集、ファイル参照（`@ファイル名`） |
+| **Gemini CLI** | `gemini -y` | `(esc to cancel)`, スピナー | Google検索、最新情報、マルチモーダル |
+| **Codex** | `codex --full-auto` | `• Working`, `(esc to interrupt)` | GPT-4ベース、別の視点からの回答 |
+
+**重要**: プロンプト文字（❯, ›, >）の有無だけでは完了判定できない。必ず`/check`コマンドを使用すること。
+
+## スキル
 
 ### 1. tmux-multi-agent
-複数のAIエージェント（Claude Code、Gemini CLI、Codex）を並列で動かし、同じ質問に対する回答を比較するためのスキル。
+複数のAIエージェントを並列で動かし、回答を比較するスキル。
 
-**用途:**
-- 複数の視点から回答を得たい場合
-- 情報の正確性を複数のAIで確認したい場合
-- 各AIの特性を比較したい場合
-
-**ドキュメント:**
-- [SKILL.md](skills/tmux-multi-agent/SKILL.md)
-- [reference.md](skills/tmux-multi-agent/reference.md)
+**ドキュメント**: [skills/tmux-multi-agent/SKILL.md](skills/tmux-multi-agent/SKILL.md)
 
 ### 2. tmux-single-agent
-1つのAIエージェント（Claude Code、Gemini CLI、Codexのいずれか）を使って質問に答えてもらうためのシンプルなスキル。
+1つのAIエージェントと対話するシンプルなスキル。
 
-**用途:**
-- 特定のエージェントに質問したい場合
-- ファイル参照が必要な場合（Claude Codeのみ）
-- シンプルに1つのAIと対話したい場合
-
-**ドキュメント:**
-- [SKILL.md](skills/tmux-single-agent/SKILL.md)
-- [examples.md](skills/tmux-single-agent/examples.md)
+**ドキュメント**: [skills/tmux-single-agent/SKILL.md](skills/tmux-single-agent/SKILL.md)
 
 ### 3. troubleshooting
 tmux操作やエージェント起動時のトラブルシューティング。
 
-**ドキュメント:**
-- [SKILL.md](skills/troubleshooting/SKILL.md)
+**ドキュメント**: [skills/troubleshooting/SKILL.md](skills/troubleshooting/SKILL.md)
 
-## クイックスタート
+## 詳細ドキュメント
 
-### シングルエージェントで質問（Claude Code）
-
-```bash
-# ペイン作成
-tmux split-window -h -p 50
-
-# Claude Code起動
-tmux send-keys -t 1 'claude' C-m
-
-# 質問送信
-tmux send-keys -t 1 'Pythonのリスト内包表記について教えてください' C-m
-
-# 回答確認
-tmux capture-pane -t 1 -p | tail -12
-```
-
-### マルチエージェントで並列質問
-
-```bash
-# レイアウト構築（左メイン + 右3分割）
-tmux split-window -h -p 50
-tmux split-window -t 1 -v -p 67
-tmux split-window -t 2 -v -p 50
-
-# 各エージェント起動
-tmux send-keys -t 1 'claude' C-m
-tmux send-keys -t 2 'gemini -y' C-m
-tmux send-keys -t 3 'codex --full-auto' C-m
-
-# 同じ質問を全エージェントに送信
-# （個別にコマンド実行）
-```
-
-## 各AIエージェントの特徴
-
-| エージェント | 得意分野 | 備考 |
-|-------------|---------|------|
-| **Claude Code** | コード生成・編集、ファイル参照 | `@ファイル名`でファイル参照可能 |
-| **Gemini CLI** | 最新情報の検索、マルチモーダル | Google検索と連携 |
-| **Codex** | OpenAI GPT-4ベース | 別の視点からの回答 |
+- **コマンドリファレンス**: [docs/command-reference.md](docs/command-reference.md) - tmuxコマンドの詳細
+- **使用例**: [docs/examples.md](docs/examples.md) - 実践的な使用例集
 
 ## プロンプト
 
 ### Professor Synapse
-マルチエージェント操作時に使用する、エージェント召喚型のプロンプト。
+エージェント召喚型の高度なプロンプト。マルチエージェント操作時に使用。
 
-**場所:** [prompts/professor_synapse.md](prompts/professor_synapse.md)
+**場所**: [prompts/professor_synapse.md](prompts/professor_synapse.md)
 
-## セキュリティ注意事項
+## ワークフロー例
 
-**チェーンコマンドは使用禁止**
+### マルチエージェントで技術調査
+
+```
+1. /multi-agent-tmux:layout-multi でレイアウト構築
+2. 3つのCLIを起動
+3. Professor Synapseプロンプトを含む質問を送信
+4. /multi-agent-tmux:check 1-3 で状態を定期確認
+5. 全て Ready になったら回答を取得・比較
+6. 追加質問があれば /multi-agent-tmux:ask で送信
+7. 満足のいく回答が得られるまで繰り返し
+```
+
+## よくある質問
+
+### Q: プロンプト（❯）が表示されているのに Processing と判定されるのはなぜ？
+
+A: Claude Codeなどは処理中でもプロンプトを表示します。代わりに `(ctrl+c to interrupt)` などの処理中表示を見て判定しています。
+
+### Q: 回答取得時にノイズが含まれる
+
+A: `response-extractor`エージェントを使用してください。「ペイン1の回答を取得して」と指示するだけで、クリーンな回答のみを抽出します。
+
+### Q: 複数エージェントの管理が面倒
+
+A: `/multi-agent-tmux:status`コマンドで全ペインの状態を一括確認できます。
+
+### Q: ファイル参照したい
+
+A: Claude Codeのみ対応しています。`/multi-agent-tmux:ask 1 @README.md 要約して`のように使用します。
+
+## セキュリティ
+
+**チェーンコマンド禁止**
 
 ```bash
-# ❌ 危険
+# ❌ 危険：コマンドインジェクションのリスク
 tmux split-window -h && tmux send-keys 'claude'
 
-# ✅ 安全
+# ✅ 安全：個別実行
 tmux split-window -h
 tmux send-keys 'claude'
 ```
 
-理由: `&&` や `;` を許可すると、悪意あるコマンドが混入する可能性があります。
+すべてのtmuxコマンドは個別に実行され、`&&`や`;`によるチェーンは使用していません。
 
 ## 必要な環境
 
-- tmux
-- Claude Code CLI (`claude`)
-- Gemini CLI (`gemini`)
-- OpenAI Codex CLI (`codex`)
+- **tmux**: ペイン管理に必要
+- **Claude Code CLI** (`claude`): オプション
+- **Gemini CLI** (`gemini`): オプション
+- **OpenAI Codex CLI** (`codex`): オプション
+
+※少なくとも1つのCLIが必要です。
 
 ## ディレクトリ構造
 
@@ -152,28 +225,36 @@ multi-agent-tmux/
 ├── .claude-plugin/
 │   └── plugin.json                    # プラグインマニフェスト
 ├── commands/                          # スラッシュコマンド
-│   ├── layout-single.md               # シングル用レイアウト
-│   ├── layout-multi.md                # マルチ用レイアウト
-│   ├── spawn.md                       # エージェント起動
-│   ├── ask.md                         # 質問送信
-│   ├── check.md                       # 状態確認
-│   ├── capture.md                     # 完了確認・回答取得
-│   └── status.md                      # 全体状態表示
+│   ├── layout-single.md
+│   ├── layout-multi.md
+│   ├── spawn.md
+│   ├── ask.md
+│   ├── check.md
+│   ├── capture.md
+│   └── status.md
 ├── agents/                            # サブエージェント
-│   ├── pane-status-checker.md         # 状態判定エージェント
-│   └── response-extractor.md          # 回答抽出エージェント
+│   ├── pane-status-checker.md         # 状態判定（Haiku）
+│   └── response-extractor.md          # 回答抽出（Haiku）
 ├── prompts/
 │   └── professor_synapse.md           # Professor Synapseプロンプト
-└── skills/
-    ├── tmux-multi-agent/              # マルチエージェントスキル
-    │   ├── SKILL.md
-    │   └── reference.md
-    ├── tmux-single-agent/             # シングルエージェントスキル
-    │   ├── SKILL.md
-    │   └── examples.md
-    └── troubleshooting/               # トラブルシューティング
+├── docs/                              # 詳細ドキュメント
+│   ├── command-reference.md           # tmuxコマンドリファレンス
+│   └── examples.md                    # 使用例集
+└── skills/                            # Claude Codeスキル
+    ├── tmux-multi-agent/
+    │   └── SKILL.md
+    ├── tmux-single-agent/
+    │   └── SKILL.md
+    └── troubleshooting/
         └── SKILL.md
 ```
+
+## バージョン履歴
+
+- **v1.2.0**: スキルドキュメント更新、ドキュメント構造整理
+- **v1.1.1**: 状態検知ロジック改善（実際のCLI挙動に基づく）
+- **v1.1.0**: pane-status-checkerエージェント、/checkコマンド追加
+- **v1.0.0**: 初回リリース
 
 ## ライセンス
 
@@ -182,3 +263,5 @@ MIT
 ## 貢献
 
 プルリクエストやイシューを歓迎します。
+
+**リポジトリ**: https://github.com/tejastice/cc-marketplace
