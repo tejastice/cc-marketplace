@@ -6,6 +6,40 @@ tmux上で複数のAIエージェント（Claude Code、Gemini CLI、Codex）を
 
 このプロジェクトは、tmuxを使って複数のAIエージェントを並列または単独で操作し、質問に答えてもらうためのノウハウとスキルをまとめたものです。
 
+## コマンド一覧
+
+### レイアウト構築
+- `/multi-agent-tmux:layout-single` - シングルエージェント用レイアウト（左右2分割）
+- `/multi-agent-tmux:layout-multi` - マルチエージェント用レイアウト（左メイン + 右3分割）
+
+### エージェント操作
+- `/multi-agent-tmux:spawn <cli> [name]` - 新しいペインでAIエージェントを起動
+- `/multi-agent-tmux:ask <pane> <message>` - 指定ペインに質問を送信
+- `/multi-agent-tmux:check <pane>` - ペインの状態を簡潔に確認（Ready/Processing/Awaiting Permission/Error）
+- `/multi-agent-tmux:capture <pane>` - 完了確認または回答取得
+
+### 全体管理
+- `/multi-agent-tmux:status` - 全ペインの状態を一覧表示
+
+## エージェント一覧
+
+### pane-status-checker
+ペインの状態を判定する専門エージェント（Haikuモデル）。
+
+**用途:**
+- 処理完了の検知
+- 許可待ちの検知
+- エラー検知
+- 並列処理の監視
+
+### response-extractor
+ペインからAI回答を抽出する専門エージェント（Haikuモデル）。
+
+**用途:**
+- クリーンな回答の取得
+- コンテキストの節約
+- 複数エージェントの回答比較
+
 ## スキル一覧
 
 ### 1. tmux-multi-agent
@@ -115,6 +149,19 @@ tmux send-keys 'claude'
 ```
 multi-agent-tmux/
 ├── README.md                          # このファイル
+├── .claude-plugin/
+│   └── plugin.json                    # プラグインマニフェスト
+├── commands/                          # スラッシュコマンド
+│   ├── layout-single.md               # シングル用レイアウト
+│   ├── layout-multi.md                # マルチ用レイアウト
+│   ├── spawn.md                       # エージェント起動
+│   ├── ask.md                         # 質問送信
+│   ├── check.md                       # 状態確認
+│   ├── capture.md                     # 完了確認・回答取得
+│   └── status.md                      # 全体状態表示
+├── agents/                            # サブエージェント
+│   ├── pane-status-checker.md         # 状態判定エージェント
+│   └── response-extractor.md          # 回答抽出エージェント
 ├── prompts/
 │   └── professor_synapse.md           # Professor Synapseプロンプト
 └── skills/
