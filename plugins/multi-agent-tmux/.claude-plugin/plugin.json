@@ -1,0 +1,10 @@
+{
+  "name": "multi-agent-tmux",
+  "version": "1.0.0",
+  "description": "tmux上で複数AIエージェントを並列で動かし、協調作業を行うためのプラグイン",
+  "author": {
+    "name": "Keisuke Ohno"
+  },
+  "license": "MIT",
+  "keywords": ["tmux", "multi-agent", "parallel", "orchestration", "claude", "gemini", "codex"]
+}

@@ -8,5 +8,18 @@
     "version": "1.0.0",
     "pluginRoot": "./plugins"
   },
-  "plugins": []
+  "plugins": [
+    {
+      "name": "multi-agent-tmux",
+      "source": "./multi-agent-tmux",
+      "description": "tmux上で複数AIエージェント（Claude Code、Gemini CLI、Codex）を並列で動かし、協調作業を行うためのプラグイン",
+      "version": "1.0.0",
+      "author": {
+        "name": "Keisuke Ohno"
+      },
+      "license": "MIT",
+      "keywords": ["tmux", "multi-agent", "parallel", "orchestration", "claude", "gemini", "codex"],
+      "category": "productivity"
+    }
+  ]
 }
