@@ -1,0 +1,12 @@
+# Exclude sample folder
+sample_folder/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Local testing
+*.local.md

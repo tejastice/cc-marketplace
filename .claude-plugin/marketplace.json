@@ -1,0 +1,12 @@
+{
+  "name": "cc-marketplace",
+  "owner": {
+    "name": "Keisuke Ohno"
+  },
+  "metadata": {
+    "description": "Claude Codeのカスタムプラグインマーケットプレイス",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": []
+}
