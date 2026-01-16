@@ -18,7 +18,7 @@ description: 指定したペインの状態を簡潔に確認する
 
 ```bash
 # ペイン1の状態確認
-/multi-agent-tmux:check 1
+/multi-advisor-tmux:check 1
 ```
 
 ## 出力例
@@ -49,9 +49,9 @@ Error: command not found
 
 ```bash
 # 各ペインの状態を確認
-/multi-agent-tmux:check 1
-/multi-agent-tmux:check 2
-/multi-agent-tmux:check 3
+/multi-advisor-tmux:check 1
+/multi-advisor-tmux:check 2
+/multi-advisor-tmux:check 3
 ```
 
 ## 活用シーン
@@ -63,4 +63,4 @@ Error: command not found
 
 ## 詳細な回答が必要な場合
 
-状態だけでなく回答内容も必要な場合は `/multi-agent-tmux:capture` を使用してください。
+状態だけでなく回答内容も必要な場合は `/multi-advisor-tmux:capture` を使用してください。

@@ -1,17 +1,17 @@
 ---
 name: troubleshooting
-description: マルチエージェント環境で問題が発生した時のトラブルシューティング。エージェントが応答しない、止まる、質問を無視するなどの問題に対処。
+description: マルチアドバイザー環境で問題が発生した時のトラブルシューティング。アドバイザーが応答しない、止まる、質問を無視するなどの問題に対処。
 allowed-tools: Bash, Read
 user-invocable: true
 ---
 
 # トラブルシューティング
 
-マルチエージェント環境で発生しやすい問題と対処法。
+マルチアドバイザー環境で発生しやすい問題と対処法。
 
 ## よくある問題と対処法
 
-### 1. エージェントが質問に回答しない
+### 1. アドバイザーが質問に回答しない
 
 **症状：** 質問を送ったが、本題に回答せず別のことをしている
 
@@ -21,11 +21,11 @@ user-invocable: true
 |------|--------|
 | プロンプトが長すぎて処理されなかった | 二段階方式で送信（まずProfessor Synapse、次に質問） |
 | `@ファイル名` が認識されなかった | ファイル内容を直接貼り付けて送信 |
-| エージェントが別のタスクを始めた | 「今の作業を中止して、質問に答えてください」と送信 |
+| アドバイザーが別のタスクを始めた | 「今の作業を中止して、質問に答えてください」と送信 |
 
 **確認コマンド：**
 ```bash
-# エージェントの状態を確認
+# アドバイザーの状態を確認
 tmux capture-pane -t 1 -p | tail -20
 ```
 
@@ -54,7 +54,7 @@ tmux send-keys -t 1 C-m
 
 **確認：**
 ```bash
-tmux capture-pane -t 2 -p | tail -12
+/multi-advisor-tmux:check 2
 ```
 
 **対処：**
@@ -131,7 +131,7 @@ tmux send-keys -t 1 'claude' C-m
 
 ### 7. コンテキストが溢れた
 
-**症状：** エージェントが「context limit」などのエラーを表示
+**症状：** アドバイザーが「context limit」などのエラーを表示
 
 **対処：**
 ```bash
@@ -154,12 +154,12 @@ tmux send-keys -t 1 'claude' C-m
 tmux list-panes -F '#{pane_index}: #{pane_current_command} (#{pane_pid})'
 ```
 
-### 各エージェントの最新状態
+### 各アドバイザーの最新状態
 ```bash
-# 12行で確認
-tmux capture-pane -t 1 -p | tail -12  # Claude
-tmux capture-pane -t 2 -p | tail -12  # Gemini
-tmux capture-pane -t 3 -p | tail -12  # Codex
+# 状態確認（サブエージェントで自動判定）
+/multi-advisor-tmux:check 1  # Claude
+/multi-advisor-tmux:check 2  # Gemini
+/multi-advisor-tmux:check 3  # Codex
 ```
 
 ### 全履歴を取得（詳細調査用）
@@ -171,7 +171,7 @@ tmux capture-pane -t 1 -p -S -
 
 ## 再起動手順
 
-問題が解決しない場合は、該当エージェントを再起動：
+問題が解決しない場合は、該当アドバイザーを再起動：
 
 ```bash
 # 1. ペインを終了

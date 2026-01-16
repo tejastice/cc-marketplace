@@ -1,13 +1,13 @@
 ---
-name: tmux-multi-agent
-description: tmuxで複数AIエージェントを並列操作する際に使用。マルチエージェント、並列質問、tmux操作時に活用。
+name: tmux-multi-advisor
+description: tmuxで複数AIアドバイザーを並列操作する際に使用。マルチアドバイザー、並列質問、tmux操作時に活用。
 allowed-tools: Bash, Read
 user-invocable: true
 ---
 
-# tmux マルチエージェント操作スキル
+# tmux マルチアドバイザー操作スキル
 
-tmux上で複数のAIエージェント（Claude Code, Gemini CLI, Codex）を並列で動かし、協調作業を行うためのノウハウ集。
+tmux上で複数のAIアドバイザー（Claude Code, Gemini CLI, Codex）を並列で動かし、複数の視点からアドバイスを得るためのノウハウ集。
 
 ## 作業フロー
 
@@ -30,7 +30,7 @@ tmux上で複数のAIエージェント（Claude Code, Gemini CLI, Codex）を�
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ 4. 準備完了を確認                                            │
-│    /multi-agent-tmux:check コマンドで各ペインの状態確認     │
+│    /multi-advisor-tmux:check コマンドで各ペインの状態確認     │
 │    全ペインが Ready になるまで待つ                           │
 └─────────────────────────────────────────────────────────────┘
                               ↓
@@ -43,7 +43,7 @@ tmux上で複数のAIエージェント（Claude Code, Gemini CLI, Codex）を�
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ 6. 完了確認                                                  │
-│    /multi-agent-tmux:check コマンドで各ペインの状態確認     │
+│    /multi-advisor-tmux:check コマンドで各ペインの状態確認     │
 │    全ペインが Ready になれば処理完了                         │
 └─────────────────────────────────────────────────────────────┘
                               ↓
@@ -54,7 +54,7 @@ tmux上で複数のAIエージェント（Claude Code, Gemini CLI, Codex）を�
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
 │ 8. 追加質問の判断                                            │
-│    - エージェントが質問してきた → 回答を送信                │
+│    - アドバイザーが質問してきた → 回答を送信                │
 │    - 情報が不足 → 追加質問を送信                            │
 │    - 回答が不正確 → ネット検索を指示                        │
 │    - 満足 → 終了                                            │
@@ -95,7 +95,7 @@ tmux select-pane -t 0
 
 **推奨：コマンドを使う**
 ```bash
-# /multi-agent-tmux:layout-multi コマンドを使用
+# /multi-advisor-tmux:layout-multi コマンドを使用
 # レイアウト構築とCLI起動をガイド付きで実行
 ```
 
@@ -108,9 +108,19 @@ tmux split-window -t 2 -v -p 50
 tmux select-pane -t 0
 
 # 各ペインでCLIを起動
-tmux send-keys -t 1 'claude' C-m
-tmux send-keys -t 2 'gemini -y' C-m
-tmux send-keys -t 3 'codex --full-auto' C-m
+# 重要：文字列入力とEnterキーは別々に送信する
+tmux send-keys -t 1 'claude'
+tmux send-keys -t 1 C-m
+tmux send-keys -t 2 'gemini -y'
+tmux send-keys -t 2 Enter
+tmux send-keys -t 3 'codex --full-auto'
+tmux send-keys -t 3 Enter
+
+# 起動を待つ
+sleep 1
+
+# 各CLIが入力受付状態になっているか確認
+# 各ペインをキャプチャして、プロンプトが表示されているか目視確認
 ```
 
 ### 初回メッセージ送信
@@ -165,9 +175,9 @@ tmux send-keys -t 3 Enter
 **推奨：checkコマンドを使う**
 ```bash
 # 各ペインの状態を確認
-/multi-agent-tmux:check 1  # → "Ready" または "Processing" など
-/multi-agent-tmux:check 2
-/multi-agent-tmux:check 3
+/multi-advisor-tmux:check 1  # → "Ready" または "Processing" など
+/multi-advisor-tmux:check 2
+/multi-advisor-tmux:check 3
 
 # 全ペインが Ready なら完了
 ```
@@ -176,12 +186,6 @@ tmux send-keys -t 3 Enter
 ```bash
 # response-extractorエージェントで回答を取得
 # 「ペイン1の回答を取得して」と指示する
-```
-
-**参考：手動確認（非推奨）**
-```bash
-# 目視確認（判定が難しい）
-tmux capture-pane -t 1 -p | tail -12
 ```
 
 ## 各CLIの比較
@@ -200,9 +204,9 @@ tmux capture-pane -t 1 -p | tail -12
 
 ```bash
 # 各ペインの状態を確認
-/multi-agent-tmux:check 1  # → "Ready" / "Processing" / "Awaiting Permission" / "Error"
-/multi-agent-tmux:check 2
-/multi-agent-tmux:check 3
+/multi-advisor-tmux:check 1  # → "Ready" / "Processing" / "Awaiting Permission" / "Error"
+/multi-advisor-tmux:check 2
+/multi-advisor-tmux:check 3
 ```
 
 pane-status-checkerエージェント（Haikuモデル）が処理中表示の有無を判定し、状態を返す。
@@ -215,7 +219,7 @@ pane-status-checkerエージェント（Haikuモデル）が処理中表示の�
 
 ## 追加のやりとり
 
-エージェントは1回で完璧な回答を出すとは限らない。やりとりが必要な場合は追加情報を送信する。
+アドバイザーは1回で完璧な回答を出すとは限らない。やりとりが必要な場合は追加情報を送信する。
 
 ```bash
 # 追加情報を送信
@@ -241,13 +245,13 @@ tmux send-keys -t 1 C-m
 
 ## コンテキスト節約のコツ
 
-1. **完了確認は12行**: `tmux capture-pane -t 1 -p | tail -12`
+1. **完了確認は /check コマンド**: サブエージェント（Haiku）で自動判定
 2. **回答取得は response-extractor**: サブエージェントに抽出を任せる
-3. **全履歴は本当に必要な時だけ**: `-S -` は控えめに
+3. **手動での tmux capture-pane は避ける**: サブエージェントを活用してコンテキスト節約
 
 ## 並列質問パターン
 
-同じ質問を複数エージェントに送信して比較:
+同じ質問を複数アドバイザーに送信して比較:
 
 ```bash
 # 各コマンドを個別に実行

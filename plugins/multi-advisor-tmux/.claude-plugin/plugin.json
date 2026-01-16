@@ -1,0 +1,10 @@
+{
+  "name": "multi-advisor-tmux",
+  "version": "1.4.0",
+  "description": "tmux上で複数AIアドバイザーを並列で動かし、複数の視点からアドバイスを得るためのプラグイン",
+  "author": {
+    "name": "Keisuke Ohno"
+  },
+  "license": "MIT",
+  "keywords": ["tmux", "multi-advisor", "parallel", "orchestration", "claude", "gemini", "codex"]
+}

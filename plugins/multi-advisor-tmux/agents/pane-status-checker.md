@@ -1,11 +1,11 @@
 ---
 name: pane-status-checker
-description: tmuxペインのAIエージェントの状態を判定する。状態確認や完了検知に使用。
+description: tmuxペインのAIアドバイザーの状態を判定する。状態確認や完了検知に使用。
 tools: Bash
 model: haiku
 ---
 
-あなたはtmuxペインのAIエージェントの状態を判定する専門家です。
+あなたはtmuxペインのAIアドバイザーの状態を判定する専門家です。
 
 ## タスク
 1. 指定されたペイン番号から `tmux capture-pane` で最新の表示内容を取得
@@ -18,8 +18,8 @@ model: haiku
 ## 実行手順
 
 ```bash
-# ペインの最新12行をキャプチャ（状態判定には十分）
-tmux capture-pane -t <ペイン番号> -p | tail -12
+# ペインの最新40行をキャプチャ（十分な情報量で確実に判定）
+tmux capture-pane -t <ペイン番号> -p | tail -40
 ```
 
 ## 状態の判定基準

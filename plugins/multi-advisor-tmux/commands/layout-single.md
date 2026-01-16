@@ -35,13 +35,16 @@ tmux select-pane -t 0
 
 ```bash
 # Claude Code
-tmux send-keys -t 1 'claude' C-m
+tmux send-keys -t 1 'claude'
+tmux send-keys -t 1 C-m
 
 # または Gemini CLI（自動承認モード）
-tmux send-keys -t 1 'gemini -y' C-m
+tmux send-keys -t 1 'gemini -y'
+tmux send-keys -t 1 Enter
 
 # または Codex（フルオートモード）
-tmux send-keys -t 1 'codex --full-auto' C-m
+tmux send-keys -t 1 'codex --full-auto'
+tmux send-keys -t 1 Enter
 ```
 
 ## 使用例
@@ -54,17 +57,22 @@ tmux split-window -h -p 50
 tmux select-pane -t 0
 
 # Claude Code起動
-tmux send-keys -t 1 'claude' C-m
+tmux send-keys -t 1 'claude'
+tmux send-keys -t 1 C-m
+
+# 起動を待つ
+sleep 1
 
 # 質問送信（ファイル参照可能）
-tmux send-keys -t 1 '@README.md このファイルの内容を要約してください' C-m
+tmux send-keys -t 1 '@README.md このファイルの内容を要約してください'
+tmux send-keys -t 1 C-m
 
 # 完了確認
-tmux capture-pane -t 1 -p | tail -12
+/multi-advisor-tmux:check 1
 ```
 
 ## 注意事項
 
 - シンプルな1対1の対話に最適
 - ファイル参照が必要な場合はClaude Codeを推奨
-- 複数AIで比較したい場合は `/multi-agent-tmux:layout-multi` を使用
+- 複数AIで比較したい場合は `/multi-advisor-tmux:layout-multi` を使用

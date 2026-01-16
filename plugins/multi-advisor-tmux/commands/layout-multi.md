@@ -31,14 +31,25 @@ tmux split-window -h -p 50 \; split-window -t 1 -v -p 67 \; split-window -t 2 -v
 3. 各ペインでCLIを起動する案内を表示:
 
 ```bash
+# 重要：文字列入力とEnterキーは別々に送信する
+
 # ペイン1: Claude Code
-tmux send-keys -t 1 'claude' C-m
+tmux send-keys -t 1 'claude'
+tmux send-keys -t 1 C-m
 
 # ペイン2: Gemini CLI（自動承認モード）
-tmux send-keys -t 2 'gemini -y' C-m
+tmux send-keys -t 2 'gemini -y'
+tmux send-keys -t 2 Enter
 
 # ペイン3: Codex（フルオートモード）
-tmux send-keys -t 3 'codex --full-auto' C-m
+tmux send-keys -t 3 'codex --full-auto'
+tmux send-keys -t 3 Enter
+
+# 起動を待つ
+sleep 1
+
+# 各CLIが入力受付状態になっているか確認
+# ペインをキャプチャして、プロンプトが表示されているか目視確認
 ```
 
 ## 注意事項
