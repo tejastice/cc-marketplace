@@ -10,3 +10,6 @@ sample_folder/
 
 # Local testing
 *.local.md
+
+# Development notes
+memo.txt
